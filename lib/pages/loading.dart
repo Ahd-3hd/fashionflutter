@@ -8,12 +8,35 @@ class Loading extends StatefulWidget {
 
 class _LoadingState extends State<Loading> {
   List data;
+  List extractedData;
+  bool isLoading = true;
+  String category = 'all';
   void setupWorldtime() async {
     WorldTime instance = WorldTime();
     await instance.getData();
     setState(() {
       data = instance.myData;
-      print(data[0]['id']);
+      extractedData = data;
+      isLoading = false;
+    });
+  }
+
+  void changeCatgeory(cat) {
+    setState(() {
+      isLoading = true;
+    });
+    setState(() {
+      category = cat;
+    });
+    setState(() {
+      if (cat == 'all') {
+        extractedData = data;
+      } else {
+        extractedData = data.where((x) => x['type']['en-US'] == cat).toList();
+      }
+    });
+    setState(() {
+      isLoading = false;
     });
   }
 
@@ -26,18 +49,72 @@ class _LoadingState extends State<Loading> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        children: data
-            .map((single) => Item(
-                single['title']['en-US'],
-                single['price']['en-US'],
-                single['desc']['en-US'],
-                single['imageurl']['en-US']))
-            .toList(),
+      appBar: AppBar(
+        title: Text('Elegant Lady'),
+        backgroundColor: Colors.purple,
       ),
+      body: isLoading
+          ? Text('Loading')
+          : Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      FlatButton(
+                          onPressed: () {
+                            changeCatgeory('all');
+                          },
+                          child: Text('All')),
+                      FlatButton(
+                          onPressed: () {
+                            changeCatgeory('dress');
+                          },
+                          child: Text('Dresses')),
+                      FlatButton(
+                          onPressed: () {
+                            changeCatgeory('coat');
+                          },
+                          child: Text('Coats')),
+                      FlatButton(
+                          onPressed: () {
+                            changeCatgeory('abaya');
+                          },
+                          child: Text('Abayas'))
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    children: extractedData
+                        .map((single) => Item(
+                            single['title']['en-US'],
+                            single['price']['en-US'],
+                            single['desc']['en-US'],
+                            single['imageurl']['en-US']))
+                        .toList(),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
+
+// if (category == single['type']['en-US']) {
+//   return Item(
+//       single['title']['en-US'],
+//       single['price']['en-US'],
+//       single['desc']['en-US'],
+//       single['imageurl']['en-US']);
+// } else if (category == 'all') {
+//   return Item(
+//       single['title']['en-US'],
+//       single['price']['en-US'],
+//       single['desc']['en-US'],
+//       single['imageurl']['en-US']);
+// }
 
 class Item extends StatelessWidget {
   final String title;
@@ -83,5 +160,12 @@ class Item extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class Header extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
